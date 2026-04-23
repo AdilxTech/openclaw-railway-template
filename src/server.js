@@ -9,6 +9,8 @@ import httpProxy from "http-proxy";
 import pty from "node-pty";
 import { WebSocketServer } from "ws";
 
+import { registerMemoryRoutes } from "./memoryRoutes.js";
+
 const PORT = Number.parseInt(process.env.PORT ?? "8080", 10);
 const STATE_DIR =
   process.env.OPENCLAW_STATE_DIR?.trim() ||
@@ -1409,6 +1411,10 @@ proxy.on("proxyReqWs", (proxyReq, req, socket, options, head) => {
   proxyReq.setHeader("Authorization", `Bearer ${OPENCLAW_GATEWAY_TOKEN}`);
   proxyReq.setHeader("Origin", PROXY_ORIGIN);
 });
+
+// Must be registered BEFORE the catch-all proxy below, otherwise /memory/*
+// requests fall through to the OpenClaw gateway which doesn't know them.
+registerMemoryRoutes(app, { workspaceDir: WORKSPACE_DIR });
 
 app.use(async (req, res) => {
   if (req.path === "/") {

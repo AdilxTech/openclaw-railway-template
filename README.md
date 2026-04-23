@@ -125,6 +125,49 @@ A: Visit `/setup` on your deployed instance at any time — it works both before
 
 A: Go to `/setup` and click the "Run Doctor" button. This runs `openclaw doctor --repair` which performs health checks on your gateway and channels, creates a backup of your config, and removes any unrecognized or corrupted configuration keys.
 
+## Memory file API endpoint
+
+OpenClaw exposes memory files at `GET /memory/<name>` for use by other services
+in the same Railway project (typically a dashboard service that needs to read
+the files but can't share the volume — Railway architecturally prevents
+cross-service volume mounts).
+
+Available names: `personal`, `family`, `faith`, `amanahfy`, `system`.
+(Note the path mapping — `amanahfy` reads from `amanahfy-context.md`.)
+
+The endpoint requires authentication via the `X-Wakil-Token` header. Set the
+`MEMORY_API_TOKEN` env var on the OpenClaw service to enable. Without it,
+requests return 503.
+
+Generate a strong token:
+
+```bash
+openssl rand -hex 32
+```
+
+Set the same value on **both** services that need to share access.
+
+Example consumer (private network, same Railway project):
+
+```js
+fetch("http://openclaw.railway.internal:8080/memory/personal", {
+  headers: { "X-Wakil-Token": process.env.MEMORY_API_TOKEN },
+});
+```
+
+Response codes:
+
+| Status | Meaning |
+| --- | --- |
+| `200` | File found — body is the raw markdown, `Content-Type: text/markdown; charset=utf-8` |
+| `400` | `<name>` not in the allowed list — body includes the allowed list |
+| `401` | `X-Wakil-Token` missing or doesn't match `MEMORY_API_TOKEN` |
+| `404` | Valid name but the `.md` file hasn't been written to the volume yet |
+| `500` | Unexpected file-system error |
+| `503` | `MEMORY_API_TOKEN` is not configured on the OpenClaw service |
+
+**Security**: this endpoint serves the raw contents of personal memory files. The `X-Wakil-Token` is the only protection. Use a strong random token, never commit it to git, and rotate it if you suspect it's been exposed.
+
 ## Screenshots
 
 ## Setup
