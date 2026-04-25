@@ -58,7 +58,13 @@ export function registerMemoryRoutes(app, { workspaceDir }) {
     try {
       const contents = await fsp.readFile(filePath, "utf8");
       res.set("Content-Type", "text/markdown; charset=utf-8");
-      res.set("Cache-Control", "no-store");
+      if (req.query.nocache) {
+        res.set("Cache-Control", "no-store, no-cache, must-revalidate");
+        res.set("Pragma", "no-cache");
+        res.set("Expires", "0");
+      } else {
+        res.set("Cache-Control", "no-store");
+      }
       return res.send(contents);
     } catch (error) {
       if (error && error.code === "ENOENT") {
