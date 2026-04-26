@@ -169,10 +169,18 @@ describe("memoryTokensEqual helper", () => {
 });
 
 describe("MEMORY_FILE_MAP shape", () => {
-  test("has the five expected keys", () => {
+  test("has the seven expected keys", () => {
     assert.deepEqual(
       Object.keys(MEMORY_FILE_MAP).sort(),
-      ["amanahfy", "faith", "family", "personal", "system"],
+      [
+        "amanahfy",
+        "faith",
+        "family",
+        "personal",
+        "productivity-bot",
+        "system",
+        "trading",
+      ],
     );
   });
   test("amanahfy explicitly points at amanahfy-context.md", () => {

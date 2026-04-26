@@ -7,7 +7,9 @@ export const MEMORY_FILE_MAP = Object.freeze({
   family: "family.md",
   faith: "faith.md",
   amanahfy: "amanahfy-context.md",
+  trading: "trading.md",
   system: "system.md",
+  "productivity-bot": "productivity-bot.md",
 });
 
 export function memoryTokensEqual(a, b) {
